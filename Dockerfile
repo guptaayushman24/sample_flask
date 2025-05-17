@@ -1,29 +1,18 @@
-# Use official Python image with Debian-based system
-FROM python:3.10-slim
+# ✅ Use a prebuilt image that includes dlib, face_recognition, OpenCV, etc.
+FROM bamos/face-recognition
 
-# Install system dependencies for dlib and face_recognition
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    libboost-all-dev \
-    libglib2.0-0 \
-    libsm6 \
-    libxrender1 \
-    libxext6 \
-    libatlas-base-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the entire app code to the container
+# Copy your app code into the container
 COPY . /app
 
-# Install Python dependencies
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# (Optional) Install any other Python packages you might need
+# Note: face_recognition, dlib, numpy, opencv-python etc. are already installed
+RUN pip install flask
 
-# Expose port (Flask default)
+# Expose the port for the Flask app
 EXPOSE 5000
 
-# Command to run your app
+# Set the command to run your Flask app
 CMD ["python", "app.py"]
