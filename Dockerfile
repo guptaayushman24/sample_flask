@@ -31,11 +31,15 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install Dlib
-ENV CFLAGS=-static
+# Removed CFLAGS=-static
 RUN pip3 install --upgrade pip && \
     git clone -b 'v19.21' --single-branch https://github.com/davisking/dlib.git && \
     cd dlib/ && \
-    python3 setup.py install --set BUILD_SHARED_LIBS=OFF
+    python3 setup.py install --set BUILD_SHARED_LIBS=ON  # Ensure shared libs are built
+
+# Verify dlib.so location and dependencies
+RUN find /opt/venv/lib/python3.8/site-packages/ -name "dlib.so"
+RUN ldd /opt/venv/lib/python3.8/site-packages/dlib.so # Check dependencies
 
 RUN pip3 install face-recognition
 RUN pip install flask
@@ -46,31 +50,31 @@ RUN pip install opencv-python
 FROM python:3.8-slim-buster
 
 COPY --from=compile /opt/venv /opt/venv
-COPY --from=compile \
-    # Sources
-    /lib/x86_64-linux-gnu/libpthread.so.0 \
-    /lib/x86_64-linux-gnu/libz.so.1 \
-    /lib/x86_64-linux-gnu/libm.so.6 \
-    /lib/x86_64-linux-gnu/libgcc_s.so.1 \
-    /lib/x86_64-linux-gnu/libc.so.6 \
-    /lib/x86_64-linux-gnu/libdl.so.2 \
-    /lib/x86_64-linux-gnu/librt.so.1 \
-    # Destination
-    /lib/x86_64-linux-gnu/
+# COPY --from=compile \ # Removed individual library copy and copy the entire venv
+#     # Sources
+#     /lib/x86_64-linux-gnu/libpthread.so.0 \
+#     /lib/x86_64-linux-gnu/libz.so.1 \
+#     /lib/x86_64-linux-gnu/libm.so.6 \
+#     /lib/x86_64-linux-gnu/libgcc_s.so.1 \
+#     /lib/x86_64-linux-gnu/libc.so.6 \
+#     /lib/x86_64-linux-gnu/libdl.so.2 \
+#     /lib/x86_64-linux-gnu/librt.so.1 \
+#     # Destination
+#     /lib/x86_64-linux-gnu/
 
-COPY --from=compile \
-    # Sources
-    /usr/lib/x86_64-linux-gnu/libX11.so.6 \
-    /usr/lib/x86_64-linux-gnu/libXext.so.6 \
-    /usr/lib/x86_64-linux-gnu/libpng16.so.16 \
-    /usr/lib/x86_64-linux-gnu/libjpeg.so.62 \
-    /usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
-    /usr/lib/x86_64-linux-gnu/libxcb.so.1 \
-    /usr/lib/x86_64-linux-gnu/libXau.so.6 \
-    /usr/lib/x86_64-linux-gnu/libXdmcp.so.6 \
-    /usr/lib/x86_64-linux-gnu/libbsd.so.0 \
-    # Destination
-    /usr/lib/x86_64-linux-gnu/
+# COPY --from=compile \
+#     # Sources
+#     /usr/lib/x86_64-linux-gnu/libX11.so.6 \
+#     /usr/lib/x86_64-linux-gnu/libXext.so.6 \
+#     /usr/lib/x86_64-linux-gnu/libpng16.so.16 \
+#     /usr/lib/x86_64-linux-gnu/libjpeg.so.62 \
+#     /usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
+#     /usr/lib/x86_64-linux-gnu/libxcb.so.1 \
+#     /usr/lib/x86_64-linux-gnu/libXau.so.6 \
+#     /usr/lib/x86_64-linux-gnu/libXdmcp.so.6 \
+#     /usr/lib/x86_64-linux-gnu/libbsd.so.0 \
+#     # Destination
+#     /usr/lib/x86_64-linux-gnu/
 
 # Add our packages
 ENV PATH="/opt/venv/bin:$PATH"
