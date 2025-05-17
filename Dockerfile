@@ -1,30 +1,35 @@
-# Base image with Python and necessary build tools
-FROM python:3.9-slim
+FROM ubuntu:20.04
 
-# Install dependencies for face_recognition and dlib
+# Prevent interactive prompt during install
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-dev \
     cmake \
     build-essential \
+    libboost-all-dev \
     libopenblas-dev \
     liblapack-dev \
     libx11-dev \
     libgtk-3-dev \
-    libboost-all-dev \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Create working directory
+# Upgrade pip
+RUN pip3 install --upgrade pip
+
+# Install face_recognition (which includes dlib)
+RUN pip3 install face_recognition flask
+
+# Set working directory
 WORKDIR /app
 
-# Copy project files
-COPY . /app
+# Copy your app files
+COPY . .
 
-# Install Python packages (face_recognition included)
-RUN pip install --upgrade pip
-RUN pip install face_recognition flask
-
-# Expose the port your app runs on
+# Expose the port your Flask app runs on
 EXPOSE 5000
 
-# Run your app
-CMD ["python", "app.py"]
+# Run the app
+CMD ["python3", "app.py"]
