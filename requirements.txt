@@ -1,3 +1,4 @@
-# flask
-# face-recognition
-# opencv-python
+flask
+face_recognition
+dlib
+Pillow
